@@ -3,6 +3,7 @@ import discord
 import asyncio
 from discord.ext import commands
 from dotenv import load_dotenv
+from db import profiles
 import logging
 
 load_dotenv()
@@ -24,7 +25,11 @@ async def on_ready():
 async def load_extension():
     await bot.load_extension("commands")
 
+def init_dbs():
+    profiles.init_db()
+
 async def main():
+    init_dbs()
     await load_extension()
     await bot.start(os.getenv("TOKEN"))
     
