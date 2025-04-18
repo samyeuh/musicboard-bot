@@ -7,18 +7,18 @@ class Link(ui.Modal, title="link your account"):
     def __init__(self, guild_id, discord_id):
         super().__init__()
         self.name = ui.TextInput(
-            label="your musicboard name",
+            label="😎",
             style=TextStyle.short,
-            placeholder="exemple: samyeuh",
+            placeholder="your musicboard username",
             required=True,
             max_length=25,
         )
         
         self.password = ui.TextInput(
-            label="password (not stored, don't worry!)",
+            label="🔑",
             style=TextStyle.short,
-            placeholder="exemple: ilovecatgirls.xyz",
-            required=True,
+            placeholder="musicboard password (don't worry, it is not stored)",
+            required=True
         )
         self.add_item(self.name)
         self.add_item(self.password)
