@@ -12,11 +12,12 @@ class MusicboardCommands(commands.Cog):
 
     @app_commands.command(name="ping", description="test if bot is online/ok")
     async def ping(self, interaction: Interaction):
-        await interaction.response.send_message("pong :p")
+        await interaction.response.send_message("pong :p", ephemeral=True)
         
     @app_commands.command(name="link", description="link your discord account to your Musicboard account")
     async def link(self, interaction: Interaction):
-        await interaction.response.send_modal(Link())
+        await interaction.response.send_modal(Link(interaction.guild.id, interaction.user.id))
+
         
         
 

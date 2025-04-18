@@ -7,3 +7,6 @@ class MBBException(Exception):
     
     def getMessage(self):
         return self.embed
+    
+    def __str__(self):
+        return f"[MBBException] {self.embed.title} - {self.embed.description}"
