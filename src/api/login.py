@@ -19,5 +19,5 @@ def get_token(username: str, password: str):
         return data["auth_info"]["access_token"]
 
     except requests.RequestException:
-        raise MBBException("get token exception!", f"error during token retrieval for user `{username}`")
+        raise MBBException("link exception!", f"error when trying to connect to `{username}`")
 

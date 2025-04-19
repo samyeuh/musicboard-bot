@@ -31,7 +31,21 @@ def get_uid(username: str):
         return data["uid"]  
     except Exception as e:
         raise MBBException("search user exception!", f"error when trying to search user {username} :c")
+
+def me(access_token: str):
+    """ get a recap of profile of me """
     
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
     
+    response = requests.get(BASE_URL + "me/", headers=headers)
+    
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise MBBException("me exception!", "error when trying to get me information!")
+
+
 
     
