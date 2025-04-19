@@ -21,9 +21,8 @@ class MusicboardCommands(commands.Cog):
         
     @app_commands.command(name="profile", description="see your musicboard profile")
     async def profile(self, interaction: Interaction):
-        await interaction.response.send_message(
-            embed=profile.get_embed_info(interaction.guild.id, interaction.user.id, interaction.user.display_name)
-        )
+        embed, view = profile.get_embed_info(interaction.guild.id, interaction.user.id, interaction.user.display_name)
+        await interaction.response.send_message(embed=embed, view=view)
         
         
 

@@ -1,6 +1,7 @@
 from discord import Embed
 from db import profiles
 from api import ratings, users
+from discord.ui import View, Button
 
 
 emoji_type = {
@@ -11,7 +12,9 @@ emoji_type = {
     "musicboard": "<:musicboard:1363191447066771699>",
     "follow": "<:follow:1363190056747012258>",
     "heart": "<:heart:1363188522974056529>",
-    "contributions": "<:contributions:1363191275335057701>"
+    "contributions": "<:contributions:1363191275335057701>",
+    "twitter": "<:twitter:1363226841413980381>",
+    "website": "<:website:1363228936967819324>"
 }
 
 def get_embed_info(guild_id, discord_id, discord_name):
@@ -61,8 +64,23 @@ def get_embed_info(guild_id, discord_id, discord_name):
             
             ratings=display_ratings
         )
+    view = View()
+    if users_info['twitter']:
+        view.add_item(Button(
+            label="twitter",
+            url=f"https://x.com/{users_info['twitter']}",
+            emoji=emoji_type['twitter']
+        ))
     
-    return embed
+    if users_info['website']:
+        view.add_item(Button(
+            label="website",
+            url=users_info['website'],
+            emoji=emoji_type['website']
+        ))
+
+    
+    return embed, view
 
 def embed_profile(bio, discord_name, musicboard_pp, musicboard_banner,
                   musicboard_name, musicboard_link, nb_following, nb_followers, nb_like, nb_contributions, 
@@ -80,8 +98,8 @@ def embed_profile(bio, discord_name, musicboard_pp, musicboard_banner,
         name="info",
         value=(
             f"{emoji_type['musicboard']} [{musicboard_name}]({musicboard_link}) \n"
-            "\n"
-            f"{emoji_type['follow']} {nb_following} **following** | {nb_followers} **followers**  \n"
+            f"{emoji_type['follow']} {nb_followers} **followers** \n"
+            f"{emoji_type['follow']} {nb_following} **following** \n"
             f"{emoji_type['heart']} {nb_like} **like** \n"
             f"{emoji_type['contributions']} {nb_contributions} **contributions**"
         ),
@@ -101,10 +119,17 @@ def embed_profile(bio, discord_name, musicboard_pp, musicboard_banner,
     )
     
     embed.add_field(
+        name="",
+        value="",
+        inline=False
+    )
+    
+    embed.add_field(
         name="last five ratings",
         value=ratings,
         inline=False
     )
+    
     
     # embed.add_field(
     #     name="rates",
