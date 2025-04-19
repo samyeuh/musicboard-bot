@@ -5,3 +5,4 @@ bot discord musicboard (https://musicboard.app)
 - see user profile
 - see reviews of an album/artist/song from all user of your server
 - see global review of an album/artist/song
+- album roulette
