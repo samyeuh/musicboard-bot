@@ -2,6 +2,7 @@ from discord import Embed
 from db import profiles
 from api import ratings, users
 from discord.ui import View, Button
+import math
 
 
 emoji_type = {
@@ -14,8 +15,43 @@ emoji_type = {
     "heart": "<:heart:1363188522974056529>",
     "contributions": "<:contributions:1363191275335057701>",
     "twitter": "<:twitter:1363226841413980381>",
-    "website": "<:website:1363228936967819324>"
+    "website": "<:website:1363228936967819324>",
+    "reviews": "<:reviews:1363621120569249842>",
+    "info": "<:info:1363621433137299638>",
+    "stats": "<:stats:1363622617168351312>",
+    "pro": "<:pro:1363624129739231386>"
 }
+
+
+def transform_rates(counts):
+    counts = [c or 0 for c in counts]
+    
+    max_display = 5
+    max_count = max(counts) or 1
+    scaled = [
+        math.ceil((c / max_count) * max_display) if c < max_count / 2
+        else round((c / max_count) * max_display)
+        for c in counts
+    ]
+    
+    block = "■"
+    cell_width = 3
+
+    lines = []
+    for level in reversed(range(1, max_display + 1)):
+        line = ""
+        for val in scaled:
+            content = block if val >= level else " "
+            line += content.center(cell_width)
+        lines.append(line.rstrip())
+
+    labels = ""
+    for i in range(10):
+        label = str((i + 1) / 2).rstrip("0").rstrip(".")
+        labels += label.center(cell_width)
+    lines.append(labels.rstrip())
+
+    return "\n".join(lines)
 
 def get_embed_info(guild_id, discord_id, discord_name):
     musicboard_id, access_token = profiles.get_profile(guild_id, discord_id)
@@ -30,24 +66,27 @@ def get_embed_info(guild_id, discord_id, discord_name):
         
         rate = rate_doubled/2
         if rate.is_integer():
-            display_rate = str(int(rate))
+            display_rate = str(int(rate)) + "  " 
         else:
             display_rate = str(rate)
         
         if type == "artist":
-            res = f"{emoji_type[type]} **{rat['content']['name']}** • {display_rate}{emoji_type['star']}"
+            res = f"{display_rate}{emoji_type['star']} • {emoji_type[type]} **{rat['content']['name']}**"
         else:
-            res = f"{emoji_type[type]} {rat['content']['artist']['name']} - **{rat['content']['title']}** • {display_rate}{emoji_type['star']}"
+            res = f"{display_rate}{emoji_type['star']} • {emoji_type[type]} {rat['content']['artist']['name']} - **{rat['content']['title']}**"
         
         ratings_list.append(res)
     
     display_ratings = "\n".join(ratings_list)
+
+    rates_tab = transform_rates(users_info['rating_counts'])
 
     embed = embed_profile(
             bio=users_info["biography"], 
             discord_name=discord_name, 
             musicboard_pp=users_info["profile_picture"], 
             musicboard_banner=users_info["background"],
+            is_pro=users_info["is_pro"],
             
             musicboard_name=users_info["name"],
             musicboard_link=f"https://musicboard.app/{users_info['username']}",
@@ -62,7 +101,9 @@ def get_embed_info(guild_id, discord_id, discord_name):
             rated_tracks=users_info["counts"]["rated_tracks"] if users_info["counts"]["rated_tracks"] else 0,
             want_list=users_info["counts"]["want_list"] if users_info["counts"]["want_list"] else 0,
             
-            ratings=display_ratings
+            ratings=display_ratings,
+            
+            rates_tab=rates_tab
         )
     view = View()
     if users_info['twitter']:
@@ -82,20 +123,21 @@ def get_embed_info(guild_id, discord_id, discord_name):
     
     return embed, view
 
-def embed_profile(bio, discord_name, musicboard_pp, musicboard_banner,
+def embed_profile(bio, discord_name, musicboard_pp, musicboard_banner, is_pro,
                   musicboard_name, musicboard_link, nb_following, nb_followers, nb_like, nb_contributions, 
                   rating_set, rated_album, rated_artists, rated_tracks, want_list, 
-                  ratings):
+                  ratings,
+                  rates_tab):
     """ embed musicboard profil  """
     
     embed = Embed(title="", description=bio)
-    embed.set_author(name=f"profil of {discord_name}", icon_url=None, url=None)
+    embed.set_author(name=f"profil of {discord_name} {emoji_type['pro'] if is_pro else ''}", icon_url=None, url=None)
     embed.set_thumbnail(url=musicboard_pp)
     if musicboard_banner:
         embed.set_image(musicboard_banner)
     
     embed.add_field(
-        name="info",
+        name=f"{emoji_type['info']} info",
         value=(
             f"{emoji_type['musicboard']} [{musicboard_name}]({musicboard_link}) \n"
             f"{emoji_type['follow']} {nb_followers} **followers** \n"
@@ -107,7 +149,7 @@ def embed_profile(bio, discord_name, musicboard_pp, musicboard_banner,
     )
     
     embed.add_field(
-        name="stats",
+        name=f"{emoji_type['stats']} stats",
         value=(
             f"{rating_set} **ratings** \n"
             f"{rated_album} **album rated** \n"
@@ -125,17 +167,17 @@ def embed_profile(bio, discord_name, musicboard_pp, musicboard_banner,
     )
     
     embed.add_field(
-        name="last five ratings",
+        name=f"{emoji_type['reviews']} last five ratings",
         value=ratings,
         inline=False
     )
     
     
-    # embed.add_field(
-    #     name="rates",
-    #     value="(coming soon)",
-    #     inline=False
-    # )
+    embed.add_field(
+        name=f"{emoji_type['star']} rates",
+        value=f"```{rates_tab}```",
+        inline=False
+    )
     
     return embed
     
