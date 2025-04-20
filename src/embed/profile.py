@@ -139,11 +139,11 @@ def embed_profile(bio, discord_name, musicboard_pp, musicboard_banner, is_pro,
     embed.add_field(
         name=f"{emoji_type['info']} info",
         value=(
-            f"{emoji_type['musicboard']} [{musicboard_name}]({musicboard_link}) \n"
-            f"{emoji_type['follow']} {nb_followers} **followers** \n"
-            f"{emoji_type['follow']} {nb_following} **following** \n"
-            f"{emoji_type['heart']} {nb_like} **like** \n"
-            f"{emoji_type['contributions']} {nb_contributions} **contributions**"
+            f"{emoji_type['musicboard']} **[{musicboard_name}]({musicboard_link})** \n"
+            f"{emoji_type['follow']} **{nb_followers}** followers \n"
+            f"{emoji_type['follow']} **{nb_following}** following \n"
+            f"{emoji_type['heart']} **{nb_like}** likes \n"
+            f"{emoji_type['contributions']} **{nb_contributions}** contributions"
         ),
         inline=True
     )
@@ -151,11 +151,11 @@ def embed_profile(bio, discord_name, musicboard_pp, musicboard_banner, is_pro,
     embed.add_field(
         name=f"{emoji_type['stats']} stats",
         value=(
-            f"{rating_set} **ratings** \n"
-            f"{rated_album} **album rated** \n"
-            f"{rated_artists} **artist rated** \n"
-            f"{rated_tracks} **tracks rated** \n"
-            f"{want_list} in **listen later** \n"
+            f"**{rating_set}** ratings \n"
+            f"**{rated_album}** album rated \n"
+            f"**{rated_artists}** artist rated \n"
+            f"**{rated_tracks}** tracks rated \n"
+            f"**{want_list}** in listen later \n"
         ),
         inline=True
     )
