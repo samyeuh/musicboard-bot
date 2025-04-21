@@ -43,10 +43,15 @@ class MusicboardCommands(commands.Cog):
         await interaction.response.send_message("pong :p", ephemeral=True)
         
     @app_commands.command(name="link", description="link your discord account to your Musicboard account")
-    async def link(self, interaction: Interaction):    
+    async def link(self, interaction: Interaction):
+        if not interaction.guild:
+            await interaction.response.send_modal(Link(None, interaction.user.id))
+            return
+            
         if user_guilds.is_linked(str(interaction.user.id), str(interaction.guild.id)):
             await interaction.response.send_message(embed=MBBException("account already linked", "your account is already linked").getMessage(), ephemeral=True)
             return
+        
         await interaction.response.send_modal(Link(interaction.guild.id, interaction.user.id))
             
         
@@ -54,12 +59,11 @@ class MusicboardCommands(commands.Cog):
     @app_commands.describe(user="the user whose profile you want to see (optional)")
     async def profile(self, interaction: Interaction, user: Member = None):
         target = user or interaction.user
-        if not user_guilds.is_linked(str(target.id), str(interaction.guild.id)):
+        if interaction.guild and not user_guilds.is_linked(str(target.id), str(interaction.guild.id)):
             await interaction.response.send_message(embed=MBBException("profil not found", "please do /link before").getMessage(), ephemeral=True)
             return
     
         embed, view = profile.get_embed_info(
-            guild_id=interaction.guild.id,
             discord_id=target.id,
             discord_name=target.display_name
         )

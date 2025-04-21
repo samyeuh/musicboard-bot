@@ -55,7 +55,7 @@ def transform_rates(counts):
 
     return "\n".join(lines)
 
-def get_embed_info(guild_id, discord_id, discord_name):
+def get_embed_info(discord_id, discord_name):
     user_info = db.users.get_user(discord_id)
     if not user_info:
         raise MBBException("exception", "flm")
