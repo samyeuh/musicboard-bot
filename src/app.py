@@ -3,7 +3,7 @@ import discord
 import asyncio
 from discord.ext import commands
 from dotenv import load_dotenv
-from db import profiles
+from db import users, user_guilds, guilds
 import logging
 
 load_dotenv()
@@ -26,7 +26,9 @@ async def load_extension():
     await bot.load_extension("commands")
 
 def init_dbs():
-    profiles.init_db()
+    guilds.init_db()
+    users.init_db()
+    user_guilds.init_db()
 
 async def main():
     init_dbs()

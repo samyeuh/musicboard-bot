@@ -1,5 +1,5 @@
 from discord import ui, TextStyle, Embed, Color
-from db import profiles
+import db
 from exception.MBBException import MBBException
 from api import users, login
 
@@ -37,7 +37,10 @@ class Link(ui.Modal, title="link your account"):
             if users.exists(self.name.value):
                 musicboard_token = login.get_token(self.name.value, self.password.value)
                 musicboard_id = users.get_uid(self.name.value)
-                profiles.link_profile(self.guild_id, self.discord_id, musicboard_id, musicboard_token)
+                user_info = users.me(musicboard_token)
+                lang = user_info['primary_language']
+                db.users.add_user(self.discord_id, musicboard_id, musicboard_token, lang)
+                db.user_guilds.link_user_to_guild(self.discord_id, self.guild_id)
                 await interaction.followup.send(embed=okEmbed, ephemeral=True)
             else:
                 raise MBBException("user not found!", f"{self.name.value} is not found on musicboard ! :/")
