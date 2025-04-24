@@ -1,7 +1,7 @@
 from discord.ext import commands
 from discord import app_commands, Interaction, Member
-from modal.link  import Link
-from embed import profile
+from modal.link import Link, only_linking
+from embed import profile, album
 from exception.MBBException import MBBException
 from db import guilds, user_guilds, users
 
@@ -52,6 +52,13 @@ class MusicboardCommands(commands.Cog):
             await interaction.response.send_message(embed=MBBException("account already linked", "your account is already linked").getMessage(), ephemeral=True)
             return
         
+        if users.get_user(interaction.user.id):
+            if not interaction.guild:
+                await only_linking(interaction, interaction.user.id, None)
+            else:
+                await only_linking(interaction, interaction.user.id, interaction.guild.id)
+            return
+        
         await interaction.response.send_modal(Link(interaction.guild.id, interaction.user.id))
             
         
@@ -69,6 +76,20 @@ class MusicboardCommands(commands.Cog):
         )
 
         await interaction.response.send_message(embed=embed, view=view)
+        
+    @app_commands.command(name="mb", description="see reviews of an album!")
+    @app_commands.describe(query="the album whose reviews you want to see")
+    async def mb(self, interaction: Interaction, query: str):
+        await interaction.response.defer()
+        mbalbum = album.get_embed_info(
+            query, 
+            interaction.user.display_name, 
+            interaction.guild.name,
+            interaction.user.id,
+            interaction.guild.id
+        )
+        
+        await interaction.followup.send(embed=mbalbum)
         
         
 

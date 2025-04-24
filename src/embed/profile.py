@@ -71,14 +71,14 @@ def get_embed_info(discord_id, discord_name):
         
         rate = rate_doubled/2
         if rate.is_integer():
-            display_rate = str(int(rate)) + "  " 
+            display_rate = f"{str(int(rate))}   " 
         else:
             display_rate = str(rate)
         
         if type == "artist":
-            res = f"{display_rate}{emoji_type['star']} • {emoji_type[type]} **{rat['content']['name']}**"
+            res = f"{emoji_type['star']} **{display_rate}** /5 {emoji_type[type]} **{rat['content']['name']}**"
         else:
-            res = f"{display_rate}{emoji_type['star']} • {emoji_type[type]} {rat['content']['artist']['name']} - **{rat['content']['title']}**"
+            res = f"{emoji_type['star']} **{display_rate}** /5 {emoji_type[type]} {rat['content']['artist']['name']} - **{rat['content']['title']}**"
         
         ratings_list.append(res)
     

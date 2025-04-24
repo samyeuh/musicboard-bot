@@ -17,7 +17,10 @@ bot = commands.Bot(intents=intents, command_prefix='mb.')
 async def on_ready():
     print(f'Logged in as {bot.user.name}')
     try:
-        await bot.tree.sync()
+        synced = await bot.tree.sync()
+        print(f"synced {len(synced)} commands")
+        for cmd in synced:
+            print(f"- {cmd.name}")
     except Exception as e:
         print(f"Erreur lors de la synchronisation des commandes : {e}")
     
