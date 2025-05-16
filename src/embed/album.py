@@ -1,7 +1,11 @@
 from discord import Embed
 from api import albums
+from api import ratings
+from db import users
 import math
 from datetime import datetime
+
+from exception.MBBException import MBBException
 
 def get_embed_info(album_query, discord_name, guild_name, user_id, guild_id):
     albums_matches = albums.find_album(album_query)
@@ -22,6 +26,22 @@ def get_embed_info(album_query, discord_name, guild_name, user_id, guild_id):
     album_date = album['release_date']
     album_date = datetime.strptime(album_date, "%Y-%m-%d").strftime("%d/%m/%Y")
     
+    user_token = users.get_user(user_id)
+    if not user_token:
+        raise MBBException("User not linked")
+    _, access_token, _ = user_token
+    
+    user_rating = ratings.get_album_rating(album['id'], access_token)[0]['rating']
+    
+    if user_rating:
+        user_rate = math.floor(user_rating / 2 * 10) / 10
+        if user_rate.is_integer():
+            user_rate = str(int(user_rate))
+        else:
+            user_rate = str(user_rate)
+    else:
+        user_rate = "?"
+    
     embed = embed_album(
         album_name=album['title'],
         album_artist=album['artist']['name'],
@@ -30,7 +50,7 @@ def get_embed_info(album_query, discord_name, guild_name, user_id, guild_id):
         album_cover=album['cover'],
         
         discord_name=discord_name,
-        user_rate="",
+        user_rate=user_rate,
         
         average_rate=avg_rate,
         rating_count=album['ratings_count'],
@@ -57,7 +77,7 @@ def embed_album(album_name, album_artist, guild_name, album_url, album_cover,
     
     embed.add_field(
         name="your rate",
-        value=f"{discord_name}: {user_rate}",
+        value=f"{discord_name}: {user_rate}/5",
         inline=True
     )
     

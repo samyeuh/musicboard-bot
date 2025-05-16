@@ -56,4 +56,5 @@ def delete_user(discord_id):
     )
     
     conn.commit()
-    conn.close() 
+    conn.close()
+
