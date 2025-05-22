@@ -1,8 +1,7 @@
 from discord import Embed
-import db
 from api import ratings, users
 from discord.ui import View, Button
-import db.users
+from db import users as db_users
 from exception.MBBException import MBBException
 import math
 
@@ -56,10 +55,9 @@ def transform_rates(counts):
     return "\n".join(lines)
 
 def get_embed_info(discord_id, discord_name):
-    user_info = db.users.get_user(discord_id)
-    if not user_info:
+    musicboard_id, access_token, _ = db_users.get_user(discord_id)
+    if not musicboard_id:
         raise MBBException("exception", "flm")
-    musicboard_id, access_token, _ = db.users.get_user(discord_id)
     users_info = users.me(access_token)
     five_ratings = ratings.last_five_reviews(musicboard_id)
     

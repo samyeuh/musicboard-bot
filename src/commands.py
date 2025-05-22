@@ -65,11 +65,25 @@ class MusicboardCommands(commands.Cog):
     @app_commands.command(name="profile", description="see a musicboard profile")
     @app_commands.describe(user="the user whose profile you want to see (optional)")
     async def profile(self, interaction: Interaction, user: Member = None):
-        target = user or interaction.user
-        if interaction.guild and not user_guilds.is_linked(str(target.id), str(interaction.guild.id)):
-            await interaction.response.send_message(embed=MBBException("profil not found", "please do /link before").getMessage(), ephemeral=True)
-            return
-    
+        target = user if user else interaction.user
+
+        user_linked = users.get_user(str(target.id))
+        
+        if interaction.guild:
+            if not user_guilds.is_linked(str(target.id), str(interaction.guild.id)):
+                await interaction.response.send_message(
+                    embed=MBBException("profil not found", "please do /link before").getMessage(),
+                    ephemeral=True
+                )
+                return
+        else:
+            if not user_linked:
+                await interaction.response.send_message(
+                    embed=MBBException("profil not found", "please do /link before").getMessage(),
+                    ephemeral=True
+                )
+                return
+
         embed, view = profile.get_embed_info(
             discord_id=target.id,
             discord_name=target.display_name
