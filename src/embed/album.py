@@ -37,8 +37,7 @@ def compute_pertinence_score(album_id, user_token, avg_rate):
         likes * 2 +                # like * 2
         comments * 1.5 +           # commentaire * 1.5
         impressions * 0.3 +        # impression * 0.3
-        consensus_bonus * 0.5 -    # si proche de la moyenne = * 0.5
-        age_days * 0.005            # si vieille = - 0.05 TODO: attention si trop vieille ça bug et affiche pas :/
+        consensus_bonus * 0.5      # si proche de la moyenne = * 0.5
     )
     
     user_rate = math.floor(rating / 2 * 10) / 10
@@ -127,7 +126,7 @@ async def get_embed_info(album_query, discord_name, guild, user_id):
             user_name = f"**{member.display_name}**"
         else:
             user_name = member.display_name
-        res = f"[{user_name}](https://musicboard.app{ug['album_slug']}): {ug['album_rate']} /5 - {ug['likes']} likes, {ug['comments']} comments"
+        res = f"[{user_name}](https://musicboard.app{ug['album_slug']}): {ug['album_rate']}/5 - {ug['likes']} likes, {ug['comments']} comments"
         users_rates_list.append(res)
     
     if len(users_rates_list) == 0:
