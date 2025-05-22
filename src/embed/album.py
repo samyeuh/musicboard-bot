@@ -78,7 +78,23 @@ async def get_embed_info(album_query, discord_name, guild, user_id):
             user_rate = str(int(user_rate))
         else:
             user_rate = str(user_rate)
-    
+    if guild is None:
+        return embed_album(
+        album_name=album['title'],
+        album_artist=album['artist']['name'],
+        guild_name="",
+        album_url=f"https://musicboard.app{album['url_slug']}",
+        album_cover=album['cover'],
+        
+        discord_name=discord_name,
+        user_rate=user_rate,
+        
+        average_rate=avg_rate,
+        rating_count=album['ratings_count'],
+        release_date=album_date,
+        
+        ratings=""
+    )
     users_guild = user_guilds.get_users_in_guild(guild.id)
     for user in users_guild:
         token = user['token']
@@ -129,9 +145,9 @@ def embed_album(album_name, album_artist, guild_name, album_url, album_cover,
                 average_rate, rating_count, release_date,
                 ratings
                 ):
-    
+    guild_name = f"in {guild_name}" if guild_name else ""
     embed = Embed(
-        title=f"{album_name} by {album_artist} in {guild_name}",
+        title=f"{album_name} by {album_artist} {guild_name}",
         url=album_url
     )
     embed.set_thumbnail(url=album_cover)
@@ -157,10 +173,10 @@ def embed_album(album_name, album_artist, guild_name, album_url, album_cover,
         ),
         inline=True
     )
-    
-    embed.add_field(
-        name=f"{guild_name}'s rating",
-        value=ratings
-    )
+    if guild_name != "":
+        embed.add_field(
+            name=f"{guild_name}'s rating",
+            value=ratings
+        )
     
     return embed
