@@ -115,7 +115,6 @@ async def get_embed_info(album_query, discord_name, guild, user_id):
         user['likes'] = likes
         user['comments'] = comments
         user['album_slug'] = slug
-        print(user)
     
     users_guild = sorted(users_guild, key=lambda x: x['album_score'], reverse=True)
     users_guild = [u for u in users_guild if u['album_score'] > 0]
