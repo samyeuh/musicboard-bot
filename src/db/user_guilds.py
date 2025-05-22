@@ -1,7 +1,7 @@
 import sqlite3
 import os
 
-DB_PATH = "src/db/data/user_guilds.db"
+DB_PATH = str(os.getenv("DB"))
 
 def init_db():
     os.makedirs("src/db/data", exist_ok=True)
@@ -50,14 +50,15 @@ def get_users_in_guild(guild_id):
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT discord_id FROM user_guilds
-        WHERE guild_id = ?
+        SELECT users.discord_id, users.musicboard_token FROM user_guilds 
+        INNER JOIN users ON user_guilds.discord_id = users.discord_id
+        WHERE guild_id = ? 
     """, (guild_id,))
 
     res = cursor.fetchall()
     conn.close()
 
-    return [row[0] for row in res]
+    return [{"discord_id": row[0], "token": row[1]} for row in res]
 
 
 def get_guilds_of_user(discord_id):

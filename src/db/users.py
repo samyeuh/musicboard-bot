@@ -1,7 +1,7 @@
 import sqlite3
 import os
 
-DB_PATH = "src/db/data/users.db"
+DB_PATH = str(os.getenv("DB"))
 
 def init_db():
     os.makedirs("src/db/data", exist_ok=True)

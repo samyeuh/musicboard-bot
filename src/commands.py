@@ -81,12 +81,11 @@ class MusicboardCommands(commands.Cog):
     @app_commands.describe(query="the album whose reviews you want to see")
     async def mb(self, interaction: Interaction, query: str):
         await interaction.response.defer()
-        mbalbum = album.get_embed_info(
+        mbalbum = await album.get_embed_info(
             query, 
             interaction.user.display_name, 
-            interaction.guild.name,
-            interaction.user.id,
-            interaction.guild.id
+            interaction.guild,
+            interaction.user.id
         )
         
         await interaction.followup.send(embed=mbalbum)

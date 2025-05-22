@@ -21,7 +21,7 @@ def last_five_reviews(musicboard_id):
         return MBBException("last five reviews exception!", f"{res.text}")
         
         
-def get_album_rating(album_id, token):
+def get_album_rated(album_id, token):
     """Get the ratings of the user from the Musicboard API."""
     
     headers = {
