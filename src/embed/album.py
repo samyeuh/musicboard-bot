@@ -10,15 +10,16 @@ from exception.MBBException import MBBException
 
 def compute_pertinence_score(album_id, user_token, avg_rate):
     if not album_id:
-        return -1, -1, -1, -1
+        return -1, -1, -1, -1, None
     albums = ratings.get_album_rated(album_id, user_token)
     if not albums:
-        return -1, -1, -1, -1
+        return -1, -1, -1, -1, None
     album = albums[0]
     rating = album['rating']
     likes = album['like_count']
     comments = album['comment_count']
     impressions = album["impression_count"]
+    slug = album["review_url_slug"]
     
     created_at = album["created_at"]
     if created_at:
@@ -37,12 +38,17 @@ def compute_pertinence_score(album_id, user_token, avg_rate):
         comments * 1.5 +           # commentaire * 1.5
         impressions * 0.3 +        # impression * 0.3
         consensus_bonus * 0.5 -    # si proche de la moyenne = * 0.5
-        age_days * 0.05            # si vieille = - 0.05
+        age_days * 0.005            # si vieille = - 0.05 TODO: attention si trop vieille ça bug et affiche pas :/
     )
     
     user_rate = math.floor(rating / 2 * 10) / 10
+    
+    if user_rate.is_integer():
+        user_rate = str(int(user_rate))
+    else:
+        user_rate = str(user_rate)
 
-    return round(score, 2), user_rate, likes, comments
+    return round(score, 2), user_rate, likes, comments, slug
 
 async def get_embed_info(album_query, discord_name, guild, user_id):
     albums_matches = albums.find_album(album_query)
@@ -100,11 +106,16 @@ async def get_embed_info(album_query, discord_name, guild, user_id):
         token = user['token']
         if not token:
             continue
-        score, rate, likes, comments = compute_pertinence_score(album['id'], token, avg_rate)
+        score, rate, likes, comments, slug = compute_pertinence_score(album['id'], token, avg_rate)
+        if slug is None:
+            u_info = api_users.me(ug['token'])
+            slug = f"/{u_info['username']}"
         user['album_score'] = score
         user['album_rate'] = rate
         user['likes'] = likes
         user['comments'] = comments
+        user['album_slug'] = slug
+        print(user)
     
     users_guild = sorted(users_guild, key=lambda x: x['album_score'], reverse=True)
     users_guild = [u for u in users_guild if u['album_score'] > 0]
@@ -112,12 +123,18 @@ async def get_embed_info(album_query, discord_name, guild, user_id):
     max =  len(users_guild) if len(users_guild) <= 10 else 10
     for i in range(max):
         ug = users_guild[i]
-        u_info = api_users.me(ug['token'])
         member = await guild.fetch_member(ug['discord_id'])
-        res = f"[**{member.name}**](https://musicboard.app/{u_info['username']}): {ug['album_rate']} /5 - {ug['likes']} likes, {ug['comments']} comments"
+        if member.name == discord_name:
+            user_name = f"**{member.display_name}**"
+        else:
+            user_name = member.display_name
+        res = f"[{user_name}](https://musicboard.app{ug['album_slug']}): {ug['album_rate']} /5 - {ug['likes']} likes, {ug['comments']} comments"
         users_rates_list.append(res)
     
-    display_ratings = "\n".join(users_rates_list)
+    if len(users_rates_list) == 0:
+        display_ratings = "no one rated this album yet"
+    else:
+        display_ratings = "\n".join(users_rates_list)
     
     embed = embed_album(
         album_name=album['title'],
@@ -145,9 +162,9 @@ def embed_album(album_name, album_artist, guild_name, album_url, album_cover,
                 average_rate, rating_count, release_date,
                 ratings
                 ):
-    guild_name = f"in {guild_name}" if guild_name else ""
+    guild_name_title = f"in {guild_name}" if guild_name else ""
     embed = Embed(
-        title=f"{album_name} by {album_artist} {guild_name}",
+        title=f"{album_name} by {album_artist} {guild_name_title}",
         url=album_url
     )
     embed.set_thumbnail(url=album_cover)
