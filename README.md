@@ -4,9 +4,9 @@ bot discord musicboard (https://musicboard.app)
 - link profil ✅
 - see user profile ✅
 - see other user profile ✅
+- see reviews of an album/artist/song from all user of your server ✅
+- see global review of an album/artist/song ✅
 
-- see reviews of an album/artist/song from all user of your server
-- see global review of an album/artist/song
 - album roulette
 - mini-games (blind-test ??)
 - weekly/monthly recap of albums rated
