@@ -8,5 +8,6 @@ bot discord musicboard (https://musicboard.app)
 - see global review of an album/artist/song ✅
 
 - album roulette
+- database
 - mini-games (blind-test ??)
 - weekly/monthly recap of albums rated
