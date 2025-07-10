@@ -1,12 +1,11 @@
-import asyncio
 from discord import Embed
-from api import albums
+from api import tracks
 from api import ratings
 from api import users as api_users
 from db import user_guilds
 from db import users as u
 import math
-from datetime import datetime
+from datetime import datetime, timezone
 from exception.MBBException import MBBException
 
 def compute_pertinence_score(album_id, user_token, avg_rate):
@@ -40,21 +39,24 @@ def compute_pertinence_score(album_id, user_token, avg_rate):
 
     return round(score, 2), user_rate, likes, comments, slug
 
-async def get_embed_info(album_query, discord_name, guild, user_id):
-    album = albums.find_album(album_query)
+async def get_embed_info(track_query, discord_name, guild, user_id):
+    track = tracks.find_track(track_query)
+    if not track:
+        return MBBException("track not found", "please check the track name or try a different one").getMessage()
+
             
-    avg_rate = album['average_rating']
+    avg_rate = track['average_rating']
     avg_rate = math.floor(avg_rate / 2 * 10) / 10
     
-    album_date = album['release_date']
-    album_date = datetime.strptime(album_date, "%Y-%m-%d").strftime("%d/%m/%Y")
+    track_date = track['album']['release_date']
+    track_date = datetime.strptime(track_date, "%Y-%m-%d").strftime("%d/%m/%Y")
 
     user_token = u.get_user(user_id)
     if not user_token:
         return MBBException("User not linked", "do /link to link your account").getMessage()
     _, access_token, _ = user_token
     
-    user_rating_list = ratings.get_album_rated(album['id'], access_token)
+    user_rating_list = ratings.get_album_rated(track['id'], access_token)
     if not user_rating_list:
         user_rate = "unrated"
     else:
@@ -66,72 +68,72 @@ async def get_embed_info(album_query, discord_name, guild, user_id):
             user_rate = str(user_rate)
     if guild is None:
         return embed_album(
-        album_name=album['title'],
-        album_artist=album['artist']['name'],
+        album_name=track['title'],
+        album_artist=track['artist']['name'],
         guild_name="",
-        album_url=f"https://musicboard.app{album['url_slug']}",
-        album_cover=album['cover'],
+        album_url=f"https://musicboard.app{track['url_slug']}",
+        album_cover=track['cover'],
         
         discord_name=discord_name,
         user_rate=user_rate,
         
         average_rate=avg_rate,
-        rating_count=album['ratings_count'],
-        release_date=album_date,
+        rating_count=track['ratings_count'],
+        release_date=track_date,
         
         ratings=""
     )
         
-    users_guild = user_guilds.get_users_in_guild(guild.id)        
+    users_guild = user_guilds.get_users_in_guild(guild.id)
     for user in users_guild:
         token = user['token']
         if not token:
             continue
-        score, rate, likes, comments, slug = compute_pertinence_score(album['id'], token, avg_rate)
+        score, rate, likes, comments, slug = compute_pertinence_score(track['album']['id'], token, avg_rate)
         if slug is None and likes > 0:
             u_info = api_users.me(ug['token'])
             slug = f"/{u_info['username']}"
-        user['album_score'] = score
-        user['album_rate'] = rate
+        user['track_score'] = score
+        user['track_rate'] = rate
         user['likes'] = likes
         user['comments'] = comments
-        user['album_slug'] = slug
+        user['track_slug'] = slug
     
-    users_guild = sorted(users_guild, key=lambda x: x['album_score'], reverse=True)
-    users_guild = [u for u in users_guild if u['album_score'] > 0]
+    users_guild = sorted(users_guild, key=lambda x: x['track_score'], reverse=True)
+    users_guild = [u for u in users_guild if u['track_score'] > 0]
     users_rates_list = []
     max =  len(users_guild) if len(users_guild) <= 10 else 10
     for i in range(max):
         ug = users_guild[i]
-        member = guild.get_member(ug['discord_id'])
+        member = guild.get_member(ug['discord_id']) 
         if not member:
             member = await guild.fetch_member(ug['discord_id']) 
         is_sender = member.display_name == discord_name
         if is_sender:
-            res = f"**[{member.display_name}](https://musicboard.app{ug['album_slug']}): {ug['album_rate']}/5 - _{ug['likes']} likes, {ug['comments']} comments_**"
+            res = f"**[{member.display_name}](https://musicboard.app{ug['track_slug']}): {ug['track_rate']}/5 - _{ug['likes']} likes, {ug['comments']} comments_**"
         else:
-            res = f"[{member.display_name}](https://musicboard.app{ug['album_slug']}): {ug['album_rate']}/5 - _{ug['likes']} likes, {ug['comments']} comments_"
+            res = f"[{member.display_name}](https://musicboard.app{ug['track_slug']}): {ug['track_rate']}/5 - _{ug['likes']} likes, {ug['comments']} comments_"
 
         users_rates_list.append(res)
     
     if len(users_rates_list) == 0:
-        display_ratings = f"no one rated **{album['title']}** yet"
+        display_ratings = f"no one rated **{track['title']}** yet"
     else:
         display_ratings = "\n".join(users_rates_list)
     
     embed = embed_album(
-        album_name=album['title'],
-        album_artist=album['artist']['name'],
+        album_name=track['title'],
+        album_artist=track['artist']['name'],
         guild_name=guild.name,
-        album_url=f"https://musicboard.app{album['url_slug']}",
-        album_cover=album['cover'],
+        album_url=f"https://musicboard.app{track['url_slug']}",
+        album_cover=track['album']['cover'],
         
         discord_name=discord_name,
         user_rate=user_rate,
         
         average_rate=avg_rate,
-        rating_count=album['ratings_count'],
-        release_date=album_date,
+        rating_count=track['ratings_count'],
+        release_date=track_date,
         
         ratings=display_ratings
     )
