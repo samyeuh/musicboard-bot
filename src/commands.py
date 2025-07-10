@@ -1,7 +1,7 @@
 from discord.ext import commands
 from discord import app_commands, Interaction, Member
 from modal.link import Link, only_linking
-from embed import profile, album as album_embed
+from embed import profile, album as album_embed, artist as artist_embed, track as track_embed
 from exception.MBBException import MBBException
 from db import guilds, user_guilds, users
 
@@ -103,6 +103,26 @@ class MusicboardCommands(commands.Cog):
         )
         
         await interaction.followup.send(embed=mbalbum)
+    
+    @app_commands.command(name="mba", description="see reviews of an artist!")
+    @app_commands.describe(artist="the artist whose reviews you want to see")
+    async def mba(self, interaction: Interaction, artist: str):
+        await interaction.response.defer()
+        mbartist = await artist_embed.get_embed_info(artist, interaction.user, interaction.guild)
+        await interaction.followup.send(embed=mbartist)
+    
+    @app_commands.command(name="mbt", description="see reviews of a track!")
+    @app_commands.describe(track="the track whose reviews you want to see")
+    async def mbt(self, interaction: Interaction, track: str):
+        await interaction.response.defer()
+        mbtrack = await track_embed.get_embed_info(
+            track, 
+            interaction.user.display_name, 
+            interaction.guild,
+            interaction.user.id
+        )
+        
+        await interaction.followup.send(embed=mbtrack)
         
         
 
