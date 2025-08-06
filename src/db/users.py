@@ -1,60 +1,39 @@
-import sqlite3
-import os
+from exception import MBBException
 
-DB_PATH = str(os.getenv("DB"))
+supabase = None
+def _check_supabase_initialized():
+    if supabase is None:
+        raise MBBException("Database not initialized", "Please initialize the database before using this function.")
 
-def init_db():
-    os.makedirs("src/db/data", exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            discord_id TEXT PRIMARY KEY,
-            musicboard_id TEXT NOT NULL,
-            musicboard_token TEXT NOT NULL,
-            language TEXT DEFAULT 'EN'
-        )
-    """)
-
-    conn.commit()
-    conn.close()
+def init_db(client):
+    global supabase
+    supabase = client
 
 def add_user(discord_id, musicboard_id, musicboard_token, language):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
+    _check_supabase_initialized()
+    if not discord_id or not musicboard_id or not musicboard_token:
+        raise MBBException("Invalid input", "Discord ID, Musicboard ID, and token must be provided.")
     
-    cursor.execute(
-        "INSERT INTO users (discord_id, musicboard_id, musicboard_token, language) VALUES (?, ?, ?, ?)", 
-        (discord_id, musicboard_id, musicboard_token, language)
-    )
-    
-    conn.commit()
-    conn.close()
+    supabase.table("users").insert({
+        "discord_id": discord_id,
+        "musicboard_id": musicboard_id,
+        "musicboard_token": musicboard_token,
+        "language": language
+    }).execute()
     
 def get_user(discord_id):
-    conn = sqlite3.connect(DB_PATH)
+    _check_supabase_initialized()
+    if not discord_id:
+        raise MBBException("Invalid Discord ID", "The provided Discord ID is invalid.")
     
-    cursor = conn.cursor()
-    cursor.execute(
-        "SELECT musicboard_id, musicboard_token, language FROM users WHERE discord_id = ?", 
-        (discord_id,)
-    )
-    
-    user = cursor.fetchone()
-    conn.close()
-    
-    return user if user else None
+    user = supabase.table("users").select("*").eq("discord_id", discord_id).execute()
+    if user.data:
+        return user.data[0]
    
 def delete_user(discord_id):
-    conn = sqlite3.connect(DB_PATH)
+    _check_supabase_initialized()
+    if not discord_id:
+        raise MBBException("Invalid Discord ID", "The provided Discord ID is invalid.")
     
-    cursor = conn.cursor()
-    cursor.execute(
-        "DELETE FROM users WHERE discord_id = ?", 
-        (discord_id,)
-    )
-    
-    conn.commit()
-    conn.close()
+    supabase.table("users").delete().eq("discord_id", discord_id).execute()
 

@@ -51,7 +51,7 @@ async def get_embed_info(query, discord_user, discord_guild):
     
     
     u = db_users.get_user(discord_user.id)
-    _, token, _ = u
+    token= u['musicboard_token']
     user_rate = ratings.get_artist_rated(artist['id'], token)
     
     if user_rate:
@@ -80,12 +80,12 @@ async def get_embed_info(query, discord_user, discord_guild):
         
     users_guild = user_guilds.get_users_in_guild(discord_guild.id)
     for user in users_guild:
-        token = user['token']
+        token = user['musicboard_token']
         if not token:
             continue
         score, rate, likes, comments, slug = compute_pertinence_score(artist['id'], token, artist_average_rate)
         if slug is None and likes > 0:
-            u_info = artists.me(user['token'])
+            u_info = artists.me(user['musicboard_token'])
             slug = f"/{u_info['username']}"
         user['artist_score'] = score
         user['artist_rate'] = rate
@@ -104,9 +104,9 @@ async def get_embed_info(query, discord_user, discord_guild):
             member = await discord_guild.fetch_member(ug['discord_id']) 
         is_sender = member.display_name == discord_user.display_name
         if is_sender:
-            res = f"**[{member.display_name}](https://musicboard.app{ug['artist_slug']}): {ug['artist_rate']}/5 - _{ug['likes']} likes, {ug['comments']} comments_**"
+            res = f"**[{member.display_name}](https://musicboard.app{ug['artist_slug']})**: {ug['artist_rate']}/5" # - _{ug['likes']} likes, {ug['comments']} comments_**"
         else:
-            res = f"[{member.display_name}](https://musicboard.app{ug['artist_slug']}): {ug['artist_rate']}/5 - _{ug['likes']} likes, {ug['comments']} comments_"
+            res = f"[{member.display_name}](https://musicboard.app{ug['artist_slug']}): {ug['artist_rate']}/5" # - _{ug['likes']} likes, {ug['comments']} comments_"
 
         users_rates_list.append(res)
     

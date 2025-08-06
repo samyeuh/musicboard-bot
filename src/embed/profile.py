@@ -55,9 +55,11 @@ def transform_rates(counts):
     return "\n".join(lines)
 
 def get_embed_info(discord_id, discord_name):
-    musicboard_id, access_token, _ = db_users.get_user(discord_id)
-    if not musicboard_id:
-        raise MBBException("exception", "flm")
+    user = db_users.get_user(discord_id)
+    musicboard_id = user['musicboard_id']
+    access_token = user['musicboard_token']
+    if not access_token or not musicboard_id:
+        raise MBBException("User not linked", "do /link to link your account").getMessage()
     users_info = users.me(access_token)
     five_ratings = ratings.last_five_reviews(musicboard_id)
     

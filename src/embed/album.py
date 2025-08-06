@@ -52,7 +52,7 @@ async def get_embed_info(album_query, discord_name, guild, user_id):
     user_token = u.get_user(user_id)
     if not user_token:
         return MBBException("User not linked", "do /link to link your account").getMessage()
-    _, access_token, _ = user_token
+    access_token = user_token['musicboard_token']
     
     user_rating_list = ratings.get_album_rated(album['id'], access_token)
     if not user_rating_list:
@@ -84,12 +84,12 @@ async def get_embed_info(album_query, discord_name, guild, user_id):
         
     users_guild = user_guilds.get_users_in_guild(guild.id)        
     for user in users_guild:
-        token = user['token']
+        token = user['musicboard_token']
         if not token:
             continue
         score, rate, likes, comments, slug = compute_pertinence_score(album['id'], token, avg_rate)
         if slug is None and likes > 0:
-            u_info = api_users.me(ug['token'])
+            u_info = api_users.me(ug['musicboard_token'])
             slug = f"/{u_info['username']}"
         user['album_score'] = score
         user['album_rate'] = rate
@@ -108,9 +108,9 @@ async def get_embed_info(album_query, discord_name, guild, user_id):
             member = await guild.fetch_member(ug['discord_id']) 
         is_sender = member.display_name == discord_name
         if is_sender:
-            res = f"**[{member.display_name}](https://musicboard.app{ug['album_slug']}): {ug['album_rate']}/5 - _{ug['likes']} likes, {ug['comments']} comments_**"
+            res = f"**[{member.display_name}](https://musicboard.app{ug['album_slug']})**: {ug['album_rate']}/5" # - _{ug['likes']} likes, {ug['comments']} comments_**"
         else:
-            res = f"[{member.display_name}](https://musicboard.app{ug['album_slug']}): {ug['album_rate']}/5 - _{ug['likes']} likes, {ug['comments']} comments_"
+            res = f"[{member.display_name}](https://musicboard.app{ug['album_slug']}): {ug['album_rate']}/5" # - _{ug['likes']} likes, {ug['comments']} comments_"
 
         users_rates_list.append(res)
     

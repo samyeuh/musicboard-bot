@@ -4,6 +4,7 @@ import asyncio
 from discord.ext import commands
 from dotenv import load_dotenv
 from db import users, user_guilds, guilds
+from supabase import Client, create_client
 import logging
 
 load_dotenv()
@@ -29,9 +30,13 @@ async def load_extension():
     await bot.load_extension("commands")
 
 def init_dbs():
-    guilds.init_db()
-    users.init_db()
-    user_guilds.init_db()
+    url = os.getenv("SUPABASE_URL")
+    key = os.getenv("SUPABASE_KEY")
+    supabase: Client = create_client(url, key)
+    
+    guilds.init_db(supabase)
+    users.init_db(supabase)
+    user_guilds.init_db(supabase)
 
 async def main():
     init_dbs()
