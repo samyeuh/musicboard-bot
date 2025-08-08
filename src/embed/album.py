@@ -1,4 +1,3 @@
-import asyncio
 from discord import Embed
 from api import albums
 from api import ratings

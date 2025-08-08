@@ -5,7 +5,7 @@ from api import users as api_users
 from db import user_guilds
 from db import users as u
 import math
-from datetime import datetime, timezone
+from datetime import datetime
 from exception.MBBException import MBBException
 
 def compute_pertinence_score(album_id, user_token, avg_rate):
