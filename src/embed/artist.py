@@ -13,6 +13,8 @@ def compute_pertinence_score(artist_id, user_token, avg_rate):
     if not artist:
         return -1, -1, -1, -1, None
     rating = artist['rating']
+    if rating is None:
+        return -1, -1, -1, -1, None
     likes = artist['like_count']
     comments = artist['comment_count']
     impressions = artist["impression_count"]
@@ -47,6 +49,8 @@ async def get_embed_info(query, discord_user, discord_guild):
     artist_cover = artist['picture']
     artist_rating_count = artist['ratings_count']
     artist_average_rate = artist['average_rating']
+    if artist_average_rate is None:
+        artist_average_rate = 0
     artist_average_rate = math.floor(artist_average_rate / 2 * 10) / 10
     
     
@@ -54,7 +58,7 @@ async def get_embed_info(query, discord_user, discord_guild):
     token= u['musicboard_token']
     user_rate = ratings.get_artist_rated(artist['id'], token)
     
-    if user_rate:
+    if user_rate and user_rate['rating'] is not None:
         rating = user_rate['rating']
         rating = math.floor(rating / 2 * 10) / 10
         if rating.is_integer():

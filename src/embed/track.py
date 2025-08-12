@@ -15,6 +15,8 @@ def compute_pertinence_score(album_id, user_token, avg_rate):
     if not album:
         return -1, -1, -1, -1, None
     rating = album['rating']
+    if rating is None:
+        return -1, -1, -1, -1, None
     likes = album['like_count']
     comments = album['comment_count']
     impressions = album["impression_count"]
@@ -46,6 +48,8 @@ async def get_embed_info(track_query, discord_name, guild, user_id):
 
             
     avg_rate = track['average_rating']
+    if avg_rate is None:
+        avg_rate = 0
     avg_rate = math.floor(avg_rate / 2 * 10) / 10
     
     track_date = track['album']['release_date']
@@ -57,7 +61,7 @@ async def get_embed_info(track_query, discord_name, guild, user_id):
     access_token = user_token['musicboard_token']
     
     user_rating_list = ratings.get_album_rated(track['id'], access_token)
-    if not user_rating_list:
+    if not user_rating_list or user_rating_list['rating'] is None:
         user_rate = "unrated"
     else:
         user_rating = user_rating_list['rating']
