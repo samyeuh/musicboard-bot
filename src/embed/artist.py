@@ -18,22 +18,27 @@ def compute_pertinence_score(artist_id, user_token, avg_rate):
     impressions = artist["impression_count"]
     slug = artist["review_url_slug"]
 
-    consensus_bonus = max(0, 5 - abs(rating - avg_rate))  # max 5 pts
-
-    score = (
-        rating * 0.1 +             # note * 0.1
-        likes * 2 +                # like * 2
-        comments * 1.5 +           # commentaire * 1.5
-        impressions * 0.3 +        # impression * 0.3
-        consensus_bonus * 0.5      # si proche de la moyenne = * 0.5
-    )
-    
-    user_rate = math.floor(rating / 2 * 10) / 10
-    
-    if user_rate.is_integer():
-        user_rate = str(int(user_rate))
+    if rating is None:
+        rating = 0
+        score = 0 + likes * 2 + comments * 1.5 + impressions * 0.3
+        user_rate = "unrated"
     else:
-        user_rate = str(user_rate)
+        consensus_bonus = max(0, 5 - abs(rating - avg_rate))  # max 5 pts
+
+        score = (
+            rating * 0.1 +             # note * 0.1
+            likes * 2 +                # like * 2
+            comments * 1.5 +           # commentaire * 1.5
+            impressions * 0.3 +        # impression * 0.3
+            consensus_bonus * 0.5      # si proche de la moyenne = * 0.5
+        )
+        
+        user_rate = math.floor(rating / 2 * 10) / 10
+        
+        if user_rate.is_integer():
+            user_rate = str(int(user_rate))
+        else:
+            user_rate = str(user_rate)
 
     return round(score, 2), user_rate, likes, comments, slug
 

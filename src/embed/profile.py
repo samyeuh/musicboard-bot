@@ -67,13 +67,15 @@ def get_embed_info(discord_id, discord_name):
     for rat in five_ratings:
         
         type = rat["content"]["type"]
-        rate_doubled = rat["rating"]
-        
-        rate = rate_doubled/2
-        if rate.is_integer():
-            display_rate = f"{str(int(rate))}   " 
+        rate_doubled = rat["rating"] 
+        if rate_doubled is None:
+            display_rate = "unrated"
         else:
-            display_rate = str(rate)
+            rate = rate_doubled/2
+            if rate.is_integer():
+                display_rate = f"{str(int(rate))}   " 
+            else:
+                display_rate = str(rate)
         
         if type == "artist":
             res = f"{emoji_type['star']} **{display_rate}** /5 {emoji_type[type]} **{rat['content']['name']}**"

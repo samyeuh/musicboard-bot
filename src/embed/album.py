@@ -14,28 +14,34 @@ def compute_pertinence_score(album_id, user_token, avg_rate):
     album = ratings.get_album_rated(album_id, user_token)
     if not album:
         return -1, -1, -1, -1, None
-    rating = album['rating']
+    rating = None if album['rating'] is None else album['rating']
     likes = album['like_count']
     comments = album['comment_count']
     impressions = album["impression_count"]
     slug = album["review_url_slug"]
-
-    consensus_bonus = max(0, 5 - abs(rating - avg_rate))  # max 5 pts
-
-    score = (
-        rating * 0.1 +             # note * 0.1
-        likes * 2 +                # like * 2
-        comments * 1.5 +           # commentaire * 1.5
-        impressions * 0.3 +        # impression * 0.3
-        consensus_bonus * 0.5      # si proche de la moyenne = * 0.5
-    )
     
-    user_rate = math.floor(rating / 2 * 10) / 10
-    
-    if user_rate.is_integer():
-        user_rate = str(int(user_rate))
+    if rating is None:
+        rating = 0
+        score = 0.5 + likes * 2 + comments * 1.5 + impressions * 0.3
+        user_rate = "unrated"
     else:
-        user_rate = str(user_rate)
+    
+        consensus_bonus = max(0, 5 - abs(rating - avg_rate))  # max 5 pts
+
+        score = (
+            rating * 0.1 +             # note * 0.1
+            likes * 2 +                # like * 2
+            comments * 1.5 +           # commentaire * 1.5
+            impressions * 0.3 +        # impression * 0.3
+            consensus_bonus * 0.5      # si proche de la moyenne = * 0.5
+        )
+        
+        user_rate = math.floor(rating / 2 * 10) / 10
+        
+        if user_rate.is_integer():
+            user_rate = str(int(user_rate))
+        else:
+            user_rate = str(user_rate)
 
     return round(score, 2), user_rate, likes, comments, slug
 
@@ -54,7 +60,7 @@ async def get_embed_info(album_query, discord_name, guild, user_id):
     access_token = user_token['musicboard_token']
     
     user_rating_list = ratings.get_album_rated(album['id'], access_token)
-    if not user_rating_list:
+    if not user_rating_list or not user_rating_list['rating']:
         user_rate = "unrated"
     else:
         user_rating = user_rating_list['rating']
@@ -65,23 +71,23 @@ async def get_embed_info(album_query, discord_name, guild, user_id):
             user_rate = str(user_rate)
     if guild is None:
         return embed_album(
-        album_name=album['title'],
-        album_artist=album['artist']['name'],
-        guild_name="",
-        album_url=f"https://musicboard.app{album['url_slug']}",
-        album_cover=album['cover'],
+            album_name=album['title'],
+            album_artist=album['artist']['name'],
+            guild_name="",
+            album_url=f"https://musicboard.app{album['url_slug']}",
+            album_cover=album['cover'],
+            
+            discord_name=discord_name,
+            user_rate=user_rate,
+            
+            average_rate=avg_rate,
+            rating_count=album['ratings_count'],
+            release_date=album_date,
+            
+            ratings=""
+        )
         
-        discord_name=discord_name,
-        user_rate=user_rate,
-        
-        average_rate=avg_rate,
-        rating_count=album['ratings_count'],
-        release_date=album_date,
-        
-        ratings=""
-    )
-        
-    users_guild = user_guilds.get_users_in_guild(guild.id)        
+    users_guild = user_guilds.get_users_in_guild(guild.id)
     for user in users_guild:
         token = user['musicboard_token']
         if not token:
