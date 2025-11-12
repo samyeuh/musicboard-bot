@@ -43,7 +43,11 @@ def compute_pertinence_score(artist_id, user_token, avg_rate):
     return round(score, 2), user_rate, likes, comments, slug
 
 async def get_embed_info(query, discord_user, discord_guild):
-    artist = artists.find_artist(query)
+    try:
+        artist = artists.find_artist(query)
+    except MBBException as e:
+        return e.getMessage()
+    
     if not artist:
         return MBBException("artist not found", "there are no artists matching your query").getMessage()
     

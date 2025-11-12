@@ -46,7 +46,10 @@ def compute_pertinence_score(album_id, user_token, avg_rate):
     return round(score, 2), user_rate, likes, comments, slug
 
 async def get_embed_info(album_query, discord_name, guild, user_id):
-    album = albums.find_album(album_query)
+    try:
+        album = albums.find_album(album_query)
+    except MBBException as e:
+        return e.getMessage()
             
     avg_rate = album['average_rating']
     avg_rate = math.floor(avg_rate / 2 * 10) / 10

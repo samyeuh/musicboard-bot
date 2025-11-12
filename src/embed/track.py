@@ -45,7 +45,11 @@ def compute_pertinence_score(album_id, user_token, avg_rate):
     return round(score, 2), user_rate, likes, comments, slug
 
 async def get_embed_info(track_query, discord_name, guild, user_id):
-    track = tracks.find_track(track_query)
+    try:
+        track = tracks.find_track(track_query)
+    except MBBException as e:
+        return e.getMessage()
+    
     if not track:
         return MBBException("track not found", "please check the track name or try a different one").getMessage()
 
