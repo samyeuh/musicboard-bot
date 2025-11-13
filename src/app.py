@@ -5,6 +5,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 from db import users, user_guilds, guilds
 from supabase import Client, create_client
+from alive import start
 import logging
 
 load_dotenv()
@@ -39,6 +40,7 @@ def init_dbs():
     user_guilds.init_db(supabase)
 
 async def main():
+    start()
     init_dbs()
     await load_extension()
     await bot.start(os.getenv("TOKEN"))
